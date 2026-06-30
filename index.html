@@ -254,7 +254,7 @@
           <a class="bigbtn" href="mailto:info@zionpropertyacquisitions.com"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 6l10 7L22 6"/></svg> info@zionpropertyacquisitions.com</a>
         </div>
       </div>
-      <form action="mailto:info@zionpropertyacquisitions.com" method="post" enctype="text/plain">
+      <form id="leadForm" novalidate>
         <label for="name">Your name</label>
         <input id="name" name="name" required>
         <label for="phone">Phone or email</label>
@@ -263,7 +263,9 @@
         <input id="addr" name="address">
         <label for="msg">Tell us about it</label>
         <textarea id="msg" name="message" rows="4" placeholder="Condition, situation, timeline, and what you're hoping to do."></textarea>
+        <input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
         <button class="btn" type="submit">Request my offer</button>
+        <p id="formStatus" role="status" style="margin-top:12px;font-size:14px;display:none"></p>
       </form>
     </div>
   </div>
@@ -287,5 +289,26 @@
   </div>
 </footer>
 <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+<script>
+(function(){
+  var form=document.getElementById('leadForm');if(!form)return;
+  var statusEl=document.getElementById('formStatus');
+  var ENDPOINT='/api/contact'; // Cloudflare Worker route (same origin). Swap for your *.workers.dev URL if not using a route.
+  function show(msg,err){statusEl.style.display='block';statusEl.style.color=err?'#b5451f':'#2e8b57';statusEl.textContent=msg;}
+  form.addEventListener('submit',async function(e){
+    e.preventDefault();
+    var btn=form.querySelector('button[type=submit]');
+    var data=Object.fromEntries(new FormData(form).entries());
+    if(!data.name||!data.contact){show('Please add your name and a way to reach you.',true);return;}
+    btn.disabled=true;var orig=btn.textContent;btn.textContent='Sending…';
+    try{
+      var res=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+      if(!res.ok)throw new Error();
+      form.reset();show('Thanks — we got it and will reach out shortly.',false);
+    }catch(err){show('Sorry, something went wrong. Please call or email us directly.',true);}
+    finally{btn.disabled=false;btn.textContent=orig;}
+  });
+})();
+</script>
 </body>
 </html>

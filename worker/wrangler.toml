@@ -1,0 +1,12 @@
+name = "zion-contact"
+main = "src/index.js"
+compatibility_date = "2025-03-01"
+
+# Run the worker on your live domain so the form posts same-origin to /api/contact.
+# Requires the domain's DNS to be on Cloudflare (it is).
+routes = [
+  { pattern = "zionpropertyacquisitions.com/api/contact", zone_name = "zionpropertyacquisitions.com" }
+]
+
+# RESEND_API_KEY is set as a secret, NOT here:
+#   wrangler secret put RESEND_API_KEY
